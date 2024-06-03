@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +8,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -23,6 +24,25 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
+        // Email and Password Sign Up
+        window.signUpWithEmail = function signUpWithEmail() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Signed up successfully
+                    const user = userCredential.user;
+                    console.log("Email SignUp successful:", user);
+                    alert("Email SignUp successful!");
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.error("Error signing up with email:", errorCode, errorMessage);
+                    alert("Error signing up with email: " + errorMessage);
+                });
+        }
 
         // Email and Password Sign In
         window.signInWithEmail = function signInWithEmail() {
@@ -64,6 +84,12 @@
 </head>
 <body>
     <h1>Firebase Authentication Example</h1>
+    <div>
+        <h2>Email Sign Up</h2>
+        <input type="email" id="signup-email" placeholder="Email">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button onclick="signUpWithEmail()">Sign Up with Email</button>
+    </div>
     <div>
         <h2>Email Sign In</h2>
         <input type="email" id="email" placeholder="Email">
