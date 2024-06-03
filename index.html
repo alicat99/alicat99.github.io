@@ -139,7 +139,7 @@
                     // 사용자 데이터를 화면에 표시 (예: console 로그 대신 DOM 업데이트)
                     document.getElementById('user-data').textContent = `Welcome, ${userData.email}! Last login: ${userData.lastLogin.toDate()}`;
                 } else {
-                    console.log("No such document!");
+                    document.getElementById('user-data').textContent = `Data don't exist`;
                 }
             }).catch((error) => {
                 console.error("Error getting user data:", error);
