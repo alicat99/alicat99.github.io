@@ -35,7 +35,7 @@
         // Firebase SDK 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -86,12 +86,7 @@
                     document.body.classList.add('loggedIn');
                     document.body.classList.remove('loggedOut');
                     // Firestore에 사용자 데이터 기록
-                    setDoc(doc(db, "users", user.uid), {
-                        email: user.email,
-                        lastLogin: new Date()
-                    });
-                    // 사용자 데이터 읽기
-                    getUserData(user.uid);
+                    setUserData(user.uid, { email: user.email, lastLogin: new Date() });
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -114,12 +109,7 @@
                     document.body.classList.add('loggedIn');
                     document.body.classList.remove('loggedOut');
                     // Firestore에 사용자 데이터 기록
-                    setDoc(doc(db, "users", user.uid), {
-                        email: user.email,
-                        lastLogin: new Date()
-                    });
-                    // 사용자 데이터 읽기
-                    getUserData(user.uid);
+                    setUserData(user.uid, { email: user.email, lastLogin: new Date() });
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -129,17 +119,21 @@
                 });
         }
 
-        // Firestore에서 사용자 데이터 읽기
-        function getUserData(uid) {
+        // Firestore에서 사용자 데이터 읽기 또는 생성
+        function setUserData(uid, userData) {
             const userDocRef = doc(db, "users", uid);
             getDoc(userDocRef).then((docSnap) => {
                 if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    console.log("User data:", userData);
-                    // 사용자 데이터를 화면에 표시 (예: console 로그 대신 DOM 업데이트)
-                    document.getElementById('user-data').textContent = `Welcome, ${userData.email}! Last login: ${userData.lastLogin.toDate()}`;
+                    console.log("User data already exists:", docSnap.data());
                 } else {
-                    document.getElementById('user-data').textContent = `Data don't exist`;
+                    console.log("Creating user data for", uid);
+                    setDoc(userDocRef, userData)
+                        .then(() => {
+                            console.log("User data created successfully!");
+                        })
+                        .catch((error) => {
+                            console.error("Error creating user data:", error);
+                        });
                 }
             }).catch((error) => {
                 console.error("Error getting user data:", error);
@@ -151,7 +145,6 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.body.classList.add('loggedIn');
-                    getUserData(user.uid); // 사용자 데이터 읽기
                 } else {
                     document.body.classList.add('loggedOut');
                 }
@@ -164,7 +157,6 @@
     <div class="auth">
         <!-- 로그인 상태에서 보여줄 내용 -->
         <p>Welcome, you are logged in!</p>
-        <p id="user-data"></p>
     </div>
     <div class="noauth">
         <!-- 로그아웃 상태에서 보여줄 내용 -->
