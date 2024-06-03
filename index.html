@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Authentication Example</title>
+    <style>
+        .auth {
+            display: none;
+        }
+
+        .noauth {
+            display: none;
+        }
+
+        .loggedIn .auth {
+            display: block;
+        }
+
+        .loggedIn .noauth {
+            display: none;
+        }
+
+        .loggedOut .auth {
+            display: none;
+        }
+
+        .loggedOut .noauth {
+            display: block;
+        }
+    </style>
     <!-- Firebase SDK -->
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -54,6 +79,9 @@
                     const user = userCredential.user;
                     console.log("Email SignIn successful:", user);
                     alert("Email SignIn successful!");
+                    // 로그인 상태에 따라 적절한 클래스 추가
+                    document.body.classList.add('loggedIn');
+                    document.body.classList.remove('loggedOut');
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -72,6 +100,9 @@
                     const user = result.user;
                     console.log("Google SignIn successful:", user);
                     alert("Google SignIn successful!");
+                    // 로그인 상태에 따라 적절한 클래스 추가
+                    document.body.classList.add('loggedIn');
+                    document.body.classList.remove('loggedOut');
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -80,23 +111,37 @@
                     alert("Error signing in with Google: " + errorMessage);
                 });
         }
+
+        // 페이지가 로드될 때 사용자의 로그인 상태를 확인하여 적절한 클래스 추가
+        document.addEventListener("DOMContentLoaded", function () {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    document.body.classList.add('loggedIn');
+                } else {
+                    document.body.classList.add('loggedOut');
+                }
+            });
+        });
     </script>
 </head>
 <body>
     <h1>Firebase Authentication Example</h1>
-    <div>
+    <div class="auth">
+        <!-- 활성화된 로그인 상태에서 보여줄 내용 -->
+        <p>Welcome, you are logged in!</p>
+    </div>
+    <div class="noauth">
+        <!-- 활성화되지 않은 로그인 상태에서 보여줄 내용 -->
         <h2>Email Sign Up</h2>
         <input type="email" id="signup-email" placeholder="Email">
         <input type="password" id="signup-password" placeholder="Password">
         <button onclick="signUpWithEmail()">Sign Up with Email</button>
-    </div>
-    <div>
+
         <h2>Email Sign In</h2>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button onclick="signInWithEmail()">Sign In with Email</button>
-    </div>
-    <div>
+
         <h2>Google Sign In</h2>
         <button onclick="signInWithGoogle()">Sign In with Google</button>
     </div>
