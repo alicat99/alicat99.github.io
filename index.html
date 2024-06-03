@@ -35,17 +35,16 @@
         // Firebase SDK 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyAUovFUyahYm7AZkF9wM_V2w5yGmtHWzes",
-          authDomain: "login-test-7ead5.firebaseapp.com",
-          projectId: "login-test-7ead5",
-          storageBucket: "login-test-7ead5.appspot.com",
-          messagingSenderId: "409455176587",
-          appId: "1:409455176587:web:ac17e5073a11a4a09d9d8e",
-          measurementId: "G-3FTFGPX4BN"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Firebase 초기화
@@ -85,8 +84,8 @@
                     // 로그인 상태에 따라 클래스 추가
                     document.body.classList.add('loggedIn');
                     document.body.classList.remove('loggedOut');
-                    // Firestore에 사용자 데이터 기록
-                    setUserData(user.uid, { email: user.email, lastLogin: new Date() });
+                    // Firestore에 사용자 데이터 기록 또는 가져오기
+                    updateOrGetUserData(user.uid, { email: user.email });
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -108,8 +107,8 @@
                     // 로그인 상태에 따라 클래스 추가
                     document.body.classList.add('loggedIn');
                     document.body.classList.remove('loggedOut');
-                    // Firestore에 사용자 데이터 기록
-                    setUserData(user.uid, { email: user.email, lastLogin: new Date() });
+                    // Firestore에 사용자 데이터 기록 또는 가져오기
+                    updateOrGetUserData(user.uid, { email: user.email });
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -119,17 +118,22 @@
                 });
         }
 
-        // Firestore에서 사용자 데이터 읽기 또는 생성
-        function setUserData(uid, userData) {
+        // Firestore에 사용자 데이터 기록 또는 가져오기
+        function updateOrGetUserData(uid, data) {
             const userDocRef = doc(db, "users", uid);
             getDoc(userDocRef).then((docSnap) => {
                 if (docSnap.exists()) {
-                    console.log("User data already exists:", docSnap.data());
+                    const userData = docSnap.data();
+                    console.log("User data:", userData);
+                    // 사용자 데이터를 화면에 표시
+                    displayUserData(userData);
                 } else {
-                    console.log("Creating user data for", uid);
-                    setDoc(userDocRef, userData)
+                    // 사용자 데이터가 없는 경우, 새로운 사용자 정보 생성
+                    setDoc(userDocRef, data)
                         .then(() => {
-                            console.log("User data created successfully!");
+                            console.log("User data created:", data);
+                            // 사용자 데이터를 화면에 표시
+                            displayUserData(data);
                         })
                         .catch((error) => {
                             console.error("Error creating user data:", error);
@@ -140,11 +144,19 @@
             });
         }
 
+        // 사용자 데이터를 화면에 표시
+        function displayUserData(userData) {
+            // 사용자 데이터를 화면에 표시 (예: console 로그 대신 DOM 업데이트)
+            document.getElementById('user-data').textContent = `Welcome, ${userData.email || 'Anonymous User'}!`;
+        }
+
         // 페이지가 로드될 때 사용자의 로그인 상태를 확인하여 클래스 추가
         document.addEventListener("DOMContentLoaded", function () {
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.body.classList.add('loggedIn');
+                    // 사용자 데이터를 업데이트 또는 가져옵니다.
+                    updateOrGetUserData(user.uid, { email: user.email });
                 } else {
                     document.body.classList.add('loggedOut');
                 }
@@ -157,10 +169,16 @@
     <div class="auth">
         <!-- 로그인 상태에서 보여줄 내용 -->
         <p>Welcome, you are logged in!</p>
+        <p id="user-data"></p>
     </div>
     <div class="noauth">
         <!-- 로그아웃 상태에서 보여줄 내용 -->
         <h2>Email Sign Up</h2>
+        <input type="email" id="signup-email" placeholder="Email">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button onclick="signUpWithEmail()">Sign Up with Email</button>
+
+        <h2>Email Sign In</h2>
         <input type="email" id="signup-email" placeholder="Email">
         <input type="password" id="signup-password" placeholder="Password">
         <button onclick="signUpWithEmail()">Sign Up with Email</button>
